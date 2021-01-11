@@ -84,8 +84,9 @@ class PWLTest(object):
 			self.model_with_separate_variables_build_times[m_str] = constant_part_of_model_build_times + time.time() - t
 			self.model_build_times.append({'model number': m_str,
 								 		   'model name': m.ModelName,
-								  		   'time taken to build model (in seconds)': self.model_with_separate_variables_build_times[m_str]
-								  		   })
+								  		   'time taken to build model (in seconds)': self.model_with_separate_variables_build_times[m_str],
+								  		   'number of partitions': len(self.partitions),
+								  		   'partition size': len(self.x_range)})
 
 			# output model description if output_models flag is True
 			if output_models:
@@ -113,8 +114,9 @@ class PWLTest(object):
 			self.model_with_pwl_costs_build_times[m_str] = constant_part_of_model_build_times + time.time() - t
 			self.model_build_times.append({'model number': m_str,
 								 		   'model name': m.ModelName,
-								  		   'time taken to build model (in seconds)': self.model_with_pwl_costs_build_times[m_str]
-								  		   })
+								  		   'time taken to build model (in seconds)': self.model_with_pwl_costs_build_times[m_str],
+		 								   'number of partitions': len(self.partitions),
+		 								   'partition size': len(self.x_range)})
 
 			# output model description if output_models flag is True
 			if output_models:
@@ -247,8 +249,10 @@ def main():
 	runtimes_df = pd.DataFrame(runtimes)	
 	model_build_times_df = pd.DataFrame(model_build_times)
 
-	output_df = runtimes_df.merge(model_build_times_df, on=['model number', 'model name'], left_index=True, right_index=True)
+	output_df = runtimes_df.merge(model_build_times_df, on=['model number', 'model name', 'number of partitions', 'partition size'])
 	output_df.to_csv(RESULTS_OUTPUT_CSV, index=False)
+	runtimes_df.to_csv('runtimes_' + RESULTS_OUTPUT_CSV, index=False)
+	model_build_times_df.to_csv('model_build_times_'+RESULTS_OUTPUT_CSV, index=False)
 
 if __name__ == "__main__":
     main()

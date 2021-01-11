@@ -14,17 +14,39 @@ def detect_model(m_descr):
 
 def main():
 	run_times_csv_filename = sys.argv[1]
+	x_range = sys.argv[2] # 'shortened' or 'entire'
+	X_RANGE_ARGUMENT_VALUES = ['shortened', 'entire']
+	if x_range not in X_RANGE_ARGUMENT_VALUES:
+		raise ValueError("second argument should be {}".format(' or '.join(X_RANGE_ARGUMENT_VALUES)))
+
+	if len(sys.argv) > 3:
+		total_runime = True if sys.argv[3] == 'total_runtime' else False
+	else:
+		total_runime = False
+
+
+	print("sys.argv[2].lower() = {}; total_runime = {}".format(sys.argv[2].lower(), total_runime))
 
 	df = pd.read_csv(run_times_csv_filename)
 
 	df['model'] = df['model name'].apply(detect_model)
 	df.drop(columns=['model number', 'model name'], inplace=True)
+
+	
+	if total_runime:
+		df['time taken to optimise (in seconds)'] += df['time taken to build model (in seconds)']
+		figure_title = 'Comparison of total optimisation run times (including model building) for the models with individual decision variables and their augmentations via PWL cost profiles.'
+	else:
+		figure_title = 'Comparison of optimisation run times for the models with individual decision variables and their augmentations via PWL cost profiles.'
+
 	df = pd.pivot_table(df, values='time taken to optimise (in seconds)', index=['number of partitions', 'partition size', 'model'], aggfunc=np.mean)
 	df = df.reset_index()
 	# print(df)
 
 	width, height = 1200, 800
-	G = figure(title = 'Comparison of optimisation run times for the models with individual decision variables and their augmentations via PWL cost profiles.', width = width, 
+	
+	G = figure(title = figure_title, 
+			   width = width, 
 			   height = height,
 	           tools = 'save')
 
@@ -61,11 +83,18 @@ def main():
 			   legend_label = 'number of partitions = {} ({})'.format(number_of_partitions, model.replace('_', ' ')))
 	G.legend.location = 'top_left'
 	G.xaxis.axis_label = 'partition size'
-	G.yaxis.axis_label = 'optimisation run time'
+	G.yaxis.axis_label = 'optimisation run time (in seconds)'
 
 	# tune range to be displayed
-	# G.x_range.end = 2000
-	# G.y_range.end = 4
+	# G.x_range.end, G.y_range.end = 500, 0.6
+	if total_runime and x_range == 'shortened':
+		G.x_range.end, G.y_range.end = 1000, 10
+	elif total_runime and x_range == 'entire':
+		G.x_range.end, G.y_range.end = 5100, 60
+	elif not total_runime and x_range=='shortened':
+		G.x_range.end, G.y_range.end = 1000, 1.5
+	elif not total_runime and x_range=='entire':
+		G.x_range.end, G.y_range.end = 5100, 40
 
 	show(G)
 
