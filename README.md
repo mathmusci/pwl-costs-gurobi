@@ -1,4 +1,4 @@
-# A study of using piece-wise linear cost profiles versus individual variables.
+# Using piece-wise linear cost profiles versus individual variables: a study.
 Gurobi allows one to describe piece-wise linear costs per decision variable using `setPWLObj`. This, however, is an interface to a modelling trick which involves describing `n` constraints and one additional auxiliary decision variable. Piece-wise linear cost profile for a decision variable on a partition [x1, ..., xn] can be described as a collection of individual decision variables on each of the sub-intervals of the partition, and the question of interest is how each of these two approaches scales and how they compare. The code in this repo builds models and analyses obtained outputs to study such comparisons.
 
 ## Dependencies
